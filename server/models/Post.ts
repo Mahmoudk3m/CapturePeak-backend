@@ -7,6 +7,7 @@ export interface IMedia extends Document {
   likes: number;
   createdAt: Date;
   authorId: Schema.Types.ObjectId;
+  cloudinaryPublicId?: string;
 }
 
 const MediaSchema: Schema = new Schema({
@@ -15,7 +16,8 @@ const MediaSchema: Schema = new Schema({
   path: { type: String, required: true },
   likes: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
-  authorId: { type: Schema.Types.ObjectId, ref: "User" }
+  authorId: { type: Schema.Types.ObjectId, ref: "User" },
+  cloudinaryPublicId: { type: String, required: true }
 });
 
 // Indexes improve the efficiency of search operations.
