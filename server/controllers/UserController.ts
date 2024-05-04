@@ -99,7 +99,6 @@ export class UserController {
         const hashedPwd = await bcrypt.hash(user.password, 10);
         target.password = hashedPwd;
       }
-      console.log(target);
       if (typeof user.image !== "undefined" && target) {
         const uploadedImage = await cloudinary.uploader.upload(user.image, { folder: "userImages" });
         target.image = uploadedImage.secure_url;

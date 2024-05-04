@@ -52,7 +52,6 @@ export class MediaController {
       const media = await Media.find().populate("authorId", "username image");
       const isLoggedin = req.loggedin;
       const userId = req.userId;
-      console.log(isLoggedin, userId);
       for (const post of media) {
         if (isLoggedin) {
           const like = await Likes.findOne({ userId, postId: post._id });
@@ -75,7 +74,6 @@ export class MediaController {
       const { action } = req.query;
       const userId = req.userId;
       const like = await Likes.findOne({ userId, postId: id });
-      console.log(like);
 
       const post = await Media.findById(id);
       if (!post) {
