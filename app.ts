@@ -1,10 +1,10 @@
 require("dotenv").config();
 
 import express, { Express } from "express";
-import router from "./server/routes";
+import router from "./routes";
 import cors from "cors";
 
-import connectDB from "./server/config/db";
+import connectDB from "./config/db";
 
 const app: Express = express();
 const PORT = process.env.PORT || 5000;
