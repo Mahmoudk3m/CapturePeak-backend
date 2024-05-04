@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "app.ts",
-    "dev": "nodemon app.ts"
+    "dev": "nodemon app.ts",
+    "vercel-build": "echo hello"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
