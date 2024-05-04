@@ -95,7 +95,7 @@ export class UserController {
 
       const target = await User.findOne({ username: name });
       if (user.username && target?.username) {
-        target.username = user.username;
+        target.username = user.username.toLowerCase();
       }
       if (user.password && target?.password) {
         const hashedPwd = await bcrypt.hash(user.password, 10);
