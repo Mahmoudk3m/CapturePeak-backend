@@ -4,6 +4,7 @@ import User from "../models/User";
 import jwt from "jsonwebtoken";
 
 import { v2 as cloudinary } from "cloudinary";
+import { RequestWithUser } from "../types";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -33,7 +34,9 @@ export class UserController {
 
       await newUser.save();
 
-      const token = jwt.sign({ userId: newUser._id }, secret, { expiresIn: "12h" });
+      const token = jwt.sign({ user: { id: newUser._id, name: newUser.username } }, secret, {
+        expiresIn: "12h"
+      });
 
       return res.status(201).json({ username, token, id: newUser._id, message: "User registered successfully" });
     } catch (error: any) {
@@ -57,14 +60,23 @@ export class UserController {
       if (!isPasswordValid) {
         return res.status(400).json({ message: "Invalid credentials" });
       }
-      const token = jwt.sign({ userId: user._id }, secret, { expiresIn: "12h" });
-      return res.status(200).json({ token, username, id: user._id });
+      const token = jwt.sign(
+        {
+          user: {
+            id: user._id,
+            name: user.username
+          }
+        },
+        secret,
+        { expiresIn: "12h" }
+      );
+      return res.status(200).json({ token, username, id: user._id, image: user.image });
     } catch (error: any) {
       return res.status(500).json({ message: error.message });
     }
   }
 
-  public async updateUser(req: Request, res: Response): Promise<Response> {
+  public async updateUser(req: RequestWithUser, res: Response): Promise<Response> {
     try {
       const secret = process.env.JWT_SECRET;
       if (!secret) {
@@ -77,10 +89,9 @@ export class UserController {
         return res.status(400).json({ message: "Required a User object" });
       }
 
-      const email = (req as any).userEmail;
+      const name = req.userName;
 
-      const target = await User.findOne({ email }).exec();
-
+      const target = await User.findOne({ username: name });
       if (user.username && target?.username) {
         target.username = user.username;
       }
@@ -88,10 +99,21 @@ export class UserController {
         const hashedPwd = await bcrypt.hash(user.password, 10);
         target.password = hashedPwd;
       }
-      if (typeof user.image !== "undefined" && user?.image && target) {
-        target.image = user.image;
+      console.log(target);
+      if (typeof user.image !== "undefined" && target) {
+        const uploadedImage = await cloudinary.uploader.upload(user.image, { folder: "userImages" });
+        target.image = uploadedImage.secure_url;
       }
-      const token = jwt.sign({ userId: user._id }, secret, { expiresIn: "12h" });
+      const token = jwt.sign(
+        {
+          user: {
+            id: target?._id,
+            name: target?.username
+          }
+        },
+        secret,
+        { expiresIn: "12h" }
+      );
       await target?.save();
 
       return res.status(200).json({ token, username: target?.username, image: target?.image, id: target?._id });

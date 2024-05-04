@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { RequestWithUser } from "../types";
 
 import Media from "../models/Post";
 import User from "../models/User";
@@ -21,9 +22,9 @@ function isVideo(file: string) {
 }
 
 export class MediaController {
-  public async uploadMedia(req: Request, res: Response): Promise<Response> {
+  public async uploadMedia(req: RequestWithUser, res: Response): Promise<Response> {
     try {
-      const { title, description, file, username } = req.body;
+      const { title, file } = req.body;
       let uploadedFile;
       if (isImage(file)) {
         uploadedFile = await cloudinary.uploader.upload(file, { folder: "media" });
@@ -32,15 +33,12 @@ export class MediaController {
       } else {
         return res.status(400).json({ message: "Invalid file type" });
       }
-      const user = await User.findOne({ username });
-      const authorId = user ? user._id : null;
-
+      const userId = req.userId;
       const newMedia = new Media({
         title,
-        description,
         path: uploadedFile.secure_url,
-        authorId,
-        cloudinaryPublicId: uploadedFile.public_id
+        cloudinaryPublicId: uploadedFile.public_id,
+        authorId: userId
       });
       await newMedia.save();
       return res.status(201).json(newMedia);
@@ -49,23 +47,35 @@ export class MediaController {
     }
   }
 
-  public async listMedia(req: Request, res: Response): Promise<Response> {
+  public async listMedia(req: RequestWithUser, res: Response): Promise<Response> {
     try {
-      const media = await Media.find();
+      const media = await Media.find().populate("authorId", "username image");
+      const isLoggedin = req.loggedin;
+      const userId = req.userId;
+      console.log(isLoggedin, userId);
+      for (const post of media) {
+        if (isLoggedin) {
+          const like = await Likes.findOne({ userId, postId: post._id });
+          post.liked = !!like;
+        } else {
+          // If the user is not logged in, set liked to false
+          post.liked = false;
+        }
+      }
+
       return res.status(200).json(media);
     } catch (error: any) {
       return res.status(500).json({ message: error.message });
     }
   }
 
-  public async reactMedia(req: Request, res: Response): Promise<Response> {
+  public async reactMedia(req: RequestWithUser, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
       const { action } = req.query;
-      const { username } = req.body;
-      const user = await User.findOne({ username });
-      const userId = user ? user._id : null;
+      const userId = req.userId;
       const like = await Likes.findOne({ userId, postId: id });
+      console.log(like);
 
       const post = await Media.findById(id);
       if (!post) {
@@ -97,18 +107,17 @@ export class MediaController {
     }
   }
 
-  public async deleteMedia(req: Request, res: Response): Promise<Response> {
+  public async deleteMedia(req: RequestWithUser, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
-      const { username } = req.body;
-      const user = await User.findOne({ username });
-      const userId = user ? user._id : null;
       const post = await Media.findById(id);
+      const name = req.userName;
+      const user = await User.findOne({ username: name });
+      const userId = user?._id;
 
       if (!post) {
         return res.status(404).json({ message: "Post not found" });
       }
-
       if (!userId.equals(post.authorId)) {
         return res.status(403).json({ message: "You are not authorized to delete this post" });
       }
