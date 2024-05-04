@@ -101,6 +101,9 @@ export class UserController {
       }
       if (typeof user.image !== "undefined" && target) {
         const uploadedImage = await cloudinary.uploader.upload(user.image, { folder: "userImages" });
+        if (target.image) {
+          await cloudinary.uploader.destroy(target.image.split("/").pop()?.split(".")[0] as string);
+        }
         target.image = uploadedImage.secure_url;
       }
       const token = jwt.sign(
