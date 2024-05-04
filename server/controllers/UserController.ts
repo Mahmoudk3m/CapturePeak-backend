@@ -22,6 +22,8 @@ export class UserController {
 
       const { username, password } = req.body;
 
+      //make sure username is lowercase
+
       const existingUsername = await User.findOne({ username });
 
       if (existingUsername) {
@@ -30,7 +32,7 @@ export class UserController {
 
       const hashedPassword = await bcrypt.hash(password, 12);
 
-      const newUser = new User({ username, password: hashedPassword });
+      const newUser = new User({ username: username.toLowerCase(), password: hashedPassword });
 
       await newUser.save();
 
@@ -52,7 +54,7 @@ export class UserController {
       }
 
       const { username, password } = req.body;
-      const user = await User.findOne({ username });
+      const user = await User.findOne({ username: username.toLowerCase() });
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
