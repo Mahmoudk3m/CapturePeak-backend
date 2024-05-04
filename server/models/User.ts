@@ -21,4 +21,6 @@ const UserSchema: Schema = new Schema({
   }
 });
 
+UserSchema.index({ username: "text" });
+
 export default mongoose.model<IUser>("User", UserSchema);

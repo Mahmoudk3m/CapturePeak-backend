@@ -9,12 +9,13 @@ interface JwtPayload {
   };
 }
 
-const verifyJWT = (req: RequestWithUser, res: Response, next: NextFunction) => {
+const verifyJWTOptional = (req: RequestWithUser, res: Response, next: NextFunction) => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
   const secret = process.env.JWT_SECRET;
 
   if (!token || !secret) {
-    return res.status(401).json({ message: "Unauthorized - No token provided" });
+    req.loggedin = false;
+    return next();
   }
 
   jwt.verify(token, secret, (err, decoded) => {
@@ -23,6 +24,7 @@ const verifyJWT = (req: RequestWithUser, res: Response, next: NextFunction) => {
     }
     if (decoded && (decoded as JwtPayload).user) {
       const decodedUser = decoded as JwtPayload;
+      req.loggedin = true;
       req.userId = decodedUser.user.id;
       req.userName = decodedUser.user.name;
     }
@@ -30,4 +32,4 @@ const verifyJWT = (req: RequestWithUser, res: Response, next: NextFunction) => {
   });
 };
 
-export default verifyJWT;
+export default verifyJWTOptional;
