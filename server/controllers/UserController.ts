@@ -36,7 +36,7 @@ export class UserController {
 
       await newUser.save();
 
-      const token = jwt.sign({ user: { id: newUser._id, name: newUser.username } }, secret, {
+      const token = jwt.sign({ user: { id: newUser._id, name: newUser.username.toLowerCase() } }, secret, {
         expiresIn: "12h"
       });
 
@@ -66,7 +66,7 @@ export class UserController {
         {
           user: {
             id: user._id,
-            name: user.username
+            name: user.username.toLowerCase()
           }
         },
         secret,
