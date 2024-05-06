@@ -22,9 +22,7 @@ export class UserController {
 
       const { username, password } = req.body;
 
-      //make sure username is lowercase
-
-      const existingUsername = await User.findOne({ username });
+      const existingUsername = await User.findOne({ username: username.toLowerCase() });
 
       if (existingUsername) {
         return res.status(400).json({ message: "Username is already taken" });
@@ -40,7 +38,9 @@ export class UserController {
         expiresIn: "12h"
       });
 
-      return res.status(201).json({ username, token, id: newUser._id, message: "User registered successfully" });
+      return res
+        .status(201)
+        .json({ username: username.toLowerCase(), token, id: newUser._id, message: "User registered successfully" });
     } catch (error: any) {
       return res.status(500).json({ message: error.message });
     }
@@ -72,7 +72,7 @@ export class UserController {
         secret,
         { expiresIn: "12h" }
       );
-      return res.status(200).json({ token, username, id: user._id, image: user.image });
+      return res.status(200).json({ token, username: username.toLowerCase(), id: user._id, image: user.image });
     } catch (error: any) {
       return res.status(500).json({ message: error.message });
     }
@@ -93,7 +93,8 @@ export class UserController {
 
       const name = req.userName;
 
-      const target = await User.findOne({ username: name });
+      const target = await User.findOne({ username: name?.toLowerCase() });
+
       if (user.username && target?.username) {
         target.username = user.username.toLowerCase();
       }
