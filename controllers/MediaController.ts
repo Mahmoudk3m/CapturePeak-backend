@@ -13,23 +13,23 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-function isImage(file: string) {
-  return file.includes("data:image");
+function isImage(type: string) {
+  return type.includes("image");
 }
 
-function isVideo(file: string) {
-  return file.includes("data:video");
+function isVideo(type: string) {
+  return type.includes("video");
 }
 
 export class MediaController {
   public async uploadMedia(req: RequestWithUser, res: Response): Promise<Response> {
     try {
-      const { title, file } = req.body;
+      const { title, uri, type } = req.body;
       let uploadedFile;
-      if (isImage(file)) {
-        uploadedFile = await cloudinary.uploader.upload(file, { folder: "media" });
-      } else if (isVideo(file)) {
-        uploadedFile = await cloudinary.uploader.upload(file, { resource_type: "video", folder: "media" });
+      if (isImage(type)) {
+        uploadedFile = await cloudinary.uploader.upload(uri, { folder: "media" });
+      } else if (isVideo(type)) {
+        uploadedFile = await cloudinary.uploader.upload(uri, { resource_type: "video", folder: "media" });
       } else {
         return res.status(400).json({ message: "Invalid file type" });
       }
