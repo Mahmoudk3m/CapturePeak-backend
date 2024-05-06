@@ -26,7 +26,7 @@ const verifyJWTOptional = (req: RequestWithUser, res: Response, next: NextFuncti
       const decodedUser = decoded as JwtPayload;
       req.loggedin = true;
       req.userId = decodedUser.user.id;
-      req.userName = decodedUser.user.name;
+      req.userName = decodedUser.user.name.toLowerCase();
     }
     next();
   });

@@ -24,7 +24,7 @@ const verifyJWT = (req: RequestWithUser, res: Response, next: NextFunction) => {
     if (decoded && (decoded as JwtPayload).user) {
       const decodedUser = decoded as JwtPayload;
       req.userId = decodedUser.user.id;
-      req.userName = decodedUser.user.name;
+      req.userName = decodedUser.user.name.toLowerCase();
     }
     next();
   });
