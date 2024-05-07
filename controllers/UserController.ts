@@ -42,6 +42,8 @@ export class UserController {
         .status(201)
         .json({ username: username.toLowerCase(), token, id: newUser._id, message: "User registered successfully" });
     } catch (error: any) {
+      console.error(error.message);
+
       return res.status(500).json({ message: error.message });
     }
   }
