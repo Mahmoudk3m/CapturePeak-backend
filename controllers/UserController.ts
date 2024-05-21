@@ -101,7 +101,7 @@ export class UserController {
         target.username = user.username.toLowerCase();
       }
       if (user.password && target?.password) {
-        const hashedPwd = await bcrypt.hash(user.password, 10);
+        const hashedPwd = await bcrypt.hash(user.password, 12);
         target.password = hashedPwd;
       }
       if (typeof user.image !== "undefined" && target) {
